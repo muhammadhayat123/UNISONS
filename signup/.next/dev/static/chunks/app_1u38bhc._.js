@@ -122,52 +122,168 @@ if (typeof globalThis.$RefreshHelpers$ === 'object' && globalThis.$RefreshHelper
 "use strict";
 
 __turbopack_context__.s([
+    "addPersonnel",
+    ()=>addPersonnel,
+    "createAdmin",
+    ()=>createAdmin,
+    "createCompany",
+    ()=>createCompany,
+    "createCustomer",
+    ()=>createCustomer,
+    "createInquiry",
+    ()=>createInquiry,
+    "createSeller",
+    ()=>createSeller,
+    "deleteAdmin",
+    ()=>deleteAdmin,
+    "deleteCustomer",
+    ()=>deleteCustomer,
+    "deleteInquiry",
+    ()=>deleteInquiry,
+    "deletePersonnel",
+    ()=>deletePersonnel,
+    "deleteSeller",
+    ()=>deleteSeller,
+    "downloadInquiryPDF",
+    ()=>downloadInquiryPDF,
+    "getAdmins",
+    ()=>getAdmins,
+    "getCompany",
+    ()=>getCompany,
+    "getCustomer",
+    ()=>getCustomer,
+    "getCustomerInquiries",
+    ()=>getCustomerInquiries,
+    "getCustomerPersonnel",
+    ()=>getCustomerPersonnel,
+    "getCustomers",
+    ()=>getCustomers,
+    "getInquiries",
+    ()=>getInquiries,
+    "getInquiry",
+    ()=>getInquiry,
+    "getSellers",
+    ()=>getSellers,
     "loginUser",
     ()=>loginUser,
     "registerUser",
-    ()=>registerUser
+    ()=>registerUser,
+    "toggleAdmin",
+    ()=>toggleAdmin,
+    "toggleSeller",
+    ()=>toggleSeller,
+    "updateAdmin",
+    ()=>updateAdmin,
+    "updateCompany",
+    ()=>updateCompany,
+    "updateCustomer",
+    ()=>updateCustomer,
+    "updateInquiry",
+    ()=>updateInquiry,
+    "updateInquiryStatus",
+    ()=>updateInquiryStatus,
+    "updatePersonnel",
+    ()=>updatePersonnel,
+    "updateSeller",
+    ()=>updateSeller
 ]);
-const BASE_URL = "http://127.0.0.1:8000";
-/**
- * Parse FastAPI error responses into a human-readable string.
- */ async function parseError(res) {
+const BASE_URL = 'http://127.0.0.1:8000';
+async function parseError(res) {
     try {
         const body = await res.json();
-        if (typeof body.detail === "string") return body.detail;
-        if (Array.isArray(body.detail)) {
-            return body.detail.map((e)=>e.msg).join(", ");
-        }
-    } catch  {
-    // fall through
-    }
+        if (typeof body.detail === 'string') return body.detail;
+        if (Array.isArray(body.detail)) return body.detail.map((e)=>e.msg).join(', ');
+    } catch  {}
     return `Request failed with status ${res.status}`;
+}
+function authHeaders() {
+    const token = ("TURBOPACK compile-time truthy", 1) ? localStorage.getItem('token') : "TURBOPACK unreachable";
+    return {
+        'Content-Type': 'application/json',
+        ...token ? {
+            Authorization: `Bearer ${token}`
+        } : {}
+    };
+}
+async function request(method, path, body) {
+    const res = await fetch(`${BASE_URL}${path}`, {
+        method,
+        headers: authHeaders(),
+        body: body !== undefined ? JSON.stringify(body) : undefined
+    });
+    if (!res.ok) throw new Error(await parseError(res));
+    if (res.status === 204) return undefined;
+    return res.json();
 }
 async function registerUser(payload) {
     const res = await fetch(`${BASE_URL}/user/auth/register`, {
-        method: "POST",
+        method: 'POST',
         headers: {
-            "Content-Type": "application/json"
+            'Content-Type': 'application/json'
         },
         body: JSON.stringify(payload)
     });
-    if (!res.ok) {
-        throw new Error(await parseError(res));
-    }
+    if (!res.ok) throw new Error(await parseError(res));
     return res.json();
 }
 async function loginUser(payload) {
     const res = await fetch(`${BASE_URL}/user/auth/login`, {
-        method: "POST",
+        method: 'POST',
         headers: {
-            "Content-Type": "application/json"
+            'Content-Type': 'application/json'
         },
         body: JSON.stringify(payload)
     });
-    if (!res.ok) {
-        throw new Error(await parseError(res));
-    }
+    if (!res.ok) throw new Error(await parseError(res));
     return res.json();
 }
+const getCompany = ()=>request('GET', '/api/company');
+const createCompany = (data)=>request('POST', '/api/company', data);
+const updateCompany = (data)=>request('PUT', '/api/company', data);
+const getCustomers = (params = {})=>{
+    const q = new URLSearchParams(params).toString();
+    return request('GET', `/api/customers${q ? '?' + q : ''}`);
+};
+const createCustomer = (data)=>request('POST', '/api/customers', data);
+const getCustomer = (id)=>request('GET', `/api/customers/${id}`);
+const updateCustomer = (id, data)=>request('PUT', `/api/customers/${id}`, data);
+const deleteCustomer = (id)=>request('DELETE', `/api/customers/${id}`);
+const getCustomerInquiries = (id)=>request('GET', `/api/customers/${id}/inquiries`);
+const getCustomerPersonnel = (id)=>request('GET', `/api/customers/${id}/personnel`);
+const addPersonnel = (customerId, data)=>request('POST', `/api/customers/${customerId}/personnel`, data);
+const updatePersonnel = (customerId, personnelId, data)=>request('PUT', `/api/customers/${customerId}/personnel/${personnelId}`, data);
+const deletePersonnel = (customerId, personnelId)=>request('DELETE', `/api/customers/${customerId}/personnel/${personnelId}`);
+const getInquiries = (params = {})=>{
+    const q = new URLSearchParams(Object.fromEntries(Object.entries(params).filter(([, v])=>v !== undefined && v !== ''))).toString();
+    return request('GET', `/api/inquiries${q ? '?' + q : ''}`);
+};
+const createInquiry = (data)=>request('POST', '/api/inquiries', data);
+const getInquiry = (id)=>request('GET', `/api/inquiries/${id}`);
+const updateInquiry = (id, data)=>request('PUT', `/api/inquiries/${id}`, data);
+const updateInquiryStatus = (id, status)=>request('PATCH', `/api/inquiries/${id}/status`, {
+        status
+    });
+const deleteInquiry = (id)=>request('DELETE', `/api/inquiries/${id}`);
+const downloadInquiryPDF = async (id)=>{
+    const token = ("TURBOPACK compile-time truthy", 1) ? localStorage.getItem('token') : "TURBOPACK unreachable";
+    const res = await fetch(`${BASE_URL}/api/inquiries/${id}/pdf`, {
+        headers: token ? {
+            Authorization: `Bearer ${token}`
+        } : {}
+    });
+    if (!res.ok) throw new Error(await parseError(res));
+    return res.blob();
+};
+const getAdmins = ()=>request('GET', '/api/admins');
+const createAdmin = (data)=>request('POST', '/api/admins', data);
+const updateAdmin = (id, data)=>request('PUT', `/api/admins/${id}`, data);
+const toggleAdmin = (id)=>request('PATCH', `/api/admins/${id}/toggle-active`);
+const deleteAdmin = (id)=>request('DELETE', `/api/admins/${id}`);
+const getSellers = ()=>request('GET', '/api/sellers');
+const createSeller = (data)=>request('POST', '/api/sellers', data);
+const updateSeller = (id, data)=>request('PUT', `/api/sellers/${id}`, data);
+const toggleSeller = (id)=>request('PATCH', `/api/sellers/${id}/toggle-active`);
+const deleteSeller = (id)=>request('DELETE', `/api/sellers/${id}`);
 if (typeof globalThis.$RefreshHelpers$ === 'object' && globalThis.$RefreshHelpers !== null) {
     __turbopack_context__.k.registerExports(__turbopack_context__.m, globalThis.$RefreshHelpers$);
 }
@@ -250,13 +366,20 @@ function LoginPage() {
             localStorage.setItem("user", JSON.stringify({
                 id: res.data.id,
                 username: res.data.username,
-                email: res.data.email
+                email: res.data.email,
+                designation: res.data.designation
             }));
             setToast({
                 message: `Welcome back, ${res.data.username}!`,
                 type: "success"
             });
-            setTimeout(()=>router.push("/dashboard"), 1200);
+            setTimeout(()=>{
+                if (res.data.designation === 'admin') {
+                    router.push("/admin/dashboard");
+                } else {
+                    router.push("/seller/dashboard");
+                }
+            }, 1200);
         } catch (err) {
             const message = err instanceof Error ? err.message : "Something went wrong. Please try again.";
             setToast({
@@ -278,7 +401,7 @@ function LoginPage() {
                 onClose: dismissToast
             }, void 0, false, {
                 fileName: "[project]/app/login/page.tsx",
-                lineNumber: 102,
+                lineNumber: 109,
                 columnNumber: 9
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -298,14 +421,14 @@ function LoginPage() {
                                     priority: true
                                 }, void 0, false, {
                                     fileName: "[project]/app/login/page.tsx",
-                                    lineNumber: 111,
+                                    lineNumber: 118,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                     className: "w-full border-t border-gray-300/40"
                                 }, void 0, false, {
                                     fileName: "[project]/app/login/page.tsx",
-                                    lineNumber: 119,
+                                    lineNumber: 126,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -316,7 +439,7 @@ function LoginPage() {
                                             children: "Welcome Back"
                                         }, void 0, false, {
                                             fileName: "[project]/app/login/page.tsx",
-                                            lineNumber: 121,
+                                            lineNumber: 128,
                                             columnNumber: 15
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -330,25 +453,25 @@ function LoginPage() {
                                                     children: "Sign up"
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/login/page.tsx",
-                                                    lineNumber: 126,
+                                                    lineNumber: 133,
                                                     columnNumber: 17
                                                 }, this)
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/app/login/page.tsx",
-                                            lineNumber: 124,
+                                            lineNumber: 131,
                                             columnNumber: 15
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/app/login/page.tsx",
-                                    lineNumber: 120,
+                                    lineNumber: 127,
                                     columnNumber: 13
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/app/login/page.tsx",
-                            lineNumber: 110,
+                            lineNumber: 117,
                             columnNumber: 11
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("form", {
@@ -365,7 +488,7 @@ function LoginPage() {
                                             children: "Email Address"
                                         }, void 0, false, {
                                             fileName: "[project]/app/login/page.tsx",
-                                            lineNumber: 140,
+                                            lineNumber: 147,
                                             columnNumber: 15
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
@@ -379,7 +502,7 @@ function LoginPage() {
                                             className: `${inputBaseClass} ${errors.email ? "border-red-500 ring-2 ring-red-300" : ""}`
                                         }, void 0, false, {
                                             fileName: "[project]/app/login/page.tsx",
-                                            lineNumber: 143,
+                                            lineNumber: 150,
                                             columnNumber: 15
                                         }, this),
                                         errors.email && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -388,13 +511,13 @@ function LoginPage() {
                                             children: errors.email
                                         }, void 0, false, {
                                             fileName: "[project]/app/login/page.tsx",
-                                            lineNumber: 156,
+                                            lineNumber: 163,
                                             columnNumber: 17
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/app/login/page.tsx",
-                                    lineNumber: 139,
+                                    lineNumber: 146,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -409,7 +532,7 @@ function LoginPage() {
                                                     children: "Password"
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/login/page.tsx",
-                                                    lineNumber: 165,
+                                                    lineNumber: 172,
                                                     columnNumber: 17
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -417,13 +540,13 @@ function LoginPage() {
                                                     children: "Forgot password?"
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/login/page.tsx",
-                                                    lineNumber: 171,
+                                                    lineNumber: 178,
                                                     columnNumber: 17
                                                 }, this)
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/app/login/page.tsx",
-                                            lineNumber: 164,
+                                            lineNumber: 171,
                                             columnNumber: 15
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
@@ -437,7 +560,7 @@ function LoginPage() {
                                             className: `${inputBaseClass} ${errors.password ? "border-red-500 ring-2 ring-red-300" : ""}`
                                         }, void 0, false, {
                                             fileName: "[project]/app/login/page.tsx",
-                                            lineNumber: 175,
+                                            lineNumber: 182,
                                             columnNumber: 15
                                         }, this),
                                         errors.password && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -446,13 +569,13 @@ function LoginPage() {
                                             children: errors.password
                                         }, void 0, false, {
                                             fileName: "[project]/app/login/page.tsx",
-                                            lineNumber: 188,
+                                            lineNumber: 195,
                                             columnNumber: 17
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/app/login/page.tsx",
-                                    lineNumber: 163,
+                                    lineNumber: 170,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -475,7 +598,7 @@ function LoginPage() {
                                                         strokeWidth: "4"
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/login/page.tsx",
-                                                        lineNumber: 203,
+                                                        lineNumber: 210,
                                                         columnNumber: 21
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("path", {
@@ -484,48 +607,48 @@ function LoginPage() {
                                                         d: "M4 12a8 8 0 018-8v8H4z"
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/login/page.tsx",
-                                                        lineNumber: 204,
+                                                        lineNumber: 211,
                                                         columnNumber: 21
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/app/login/page.tsx",
-                                                lineNumber: 202,
+                                                lineNumber: 209,
                                                 columnNumber: 19
                                             }, this),
                                             "Signing in…"
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/app/login/page.tsx",
-                                        lineNumber: 201,
+                                        lineNumber: 208,
                                         columnNumber: 17
                                     }, this) : "Sign In"
                                 }, void 0, false, {
                                     fileName: "[project]/app/login/page.tsx",
-                                    lineNumber: 195,
+                                    lineNumber: 202,
                                     columnNumber: 13
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/app/login/page.tsx",
-                            lineNumber: 137,
+                            lineNumber: 144,
                             columnNumber: 11
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "[project]/app/login/page.tsx",
-                    lineNumber: 108,
+                    lineNumber: 115,
                     columnNumber: 9
                 }, this)
             }, void 0, false, {
                 fileName: "[project]/app/login/page.tsx",
-                lineNumber: 106,
+                lineNumber: 113,
                 columnNumber: 7
             }, this)
         ]
     }, void 0, true, {
         fileName: "[project]/app/login/page.tsx",
-        lineNumber: 100,
+        lineNumber: 107,
         columnNumber: 5
     }, this);
 }

@@ -1,9 +1,23 @@
 {
   "/_global-error/page": "app/_global-error/page.js",
   "/_not-found/page": "app/_not-found/page.js",
+  "/admin/admins/page": "app/admin/admins/page.js",
+  "/admin/customers/[id]/page": "app/admin/customers/[id]/page.js",
+  "/admin/customers/page": "app/admin/customers/page.js",
+  "/admin/dashboard/page": "app/admin/dashboard/page.js",
+  "/admin/inquiries/[id]/page": "app/admin/inquiries/[id]/page.js",
+  "/admin/inquiries/page": "app/admin/inquiries/page.js",
+  "/admin/inquiry/new/page": "app/admin/inquiry/new/page.js",
+  "/admin/sellers/page": "app/admin/sellers/page.js",
   "/dashboard/page": "app/dashboard/page.js",
   "/favicon.ico/route": "app/favicon.ico/route.js",
   "/login/page": "app/login/page.js",
   "/page": "app/page.js",
-  "/register/page": "app/register/page.js"
+  "/register/page": "app/register/page.js",
+  "/seller/customers/[id]/page": "app/seller/customers/[id]/page.js",
+  "/seller/customers/page": "app/seller/customers/page.js",
+  "/seller/dashboard/page": "app/seller/dashboard/page.js",
+  "/seller/inquiries/[id]/page": "app/seller/inquiries/[id]/page.js",
+  "/seller/inquiries/page": "app/seller/inquiries/page.js",
+  "/seller/inquiry/new/page": "app/seller/inquiry/new/page.js"
 }

@@ -21,7 +21,40 @@
     "afterFiles": [],
     "fallback": []
   },
-  "dynamicRoutes": [],
+  "dynamicRoutes": [
+    {
+      "page": "/admin/customers/[id]",
+      "regex": "^/admin/customers/([^/]+?)(?:/)?$",
+      "routeKeys": {
+        "nxtPid": "nxtPid"
+      },
+      "namedRegex": "^/admin/customers/(?<nxtPid>[^/]+?)(?:/)?$"
+    },
+    {
+      "page": "/admin/inquiries/[id]",
+      "regex": "^/admin/inquiries/([^/]+?)(?:/)?$",
+      "routeKeys": {
+        "nxtPid": "nxtPid"
+      },
+      "namedRegex": "^/admin/inquiries/(?<nxtPid>[^/]+?)(?:/)?$"
+    },
+    {
+      "page": "/seller/customers/[id]",
+      "regex": "^/seller/customers/([^/]+?)(?:/)?$",
+      "routeKeys": {
+        "nxtPid": "nxtPid"
+      },
+      "namedRegex": "^/seller/customers/(?<nxtPid>[^/]+?)(?:/)?$"
+    },
+    {
+      "page": "/seller/inquiries/[id]",
+      "regex": "^/seller/inquiries/([^/]+?)(?:/)?$",
+      "routeKeys": {
+        "nxtPid": "nxtPid"
+      },
+      "namedRegex": "^/seller/inquiries/(?<nxtPid>[^/]+?)(?:/)?$"
+    }
+  ],
   "staticRoutes": [
     {
       "page": "/",
@@ -40,6 +73,42 @@
       "regex": "^/_not\\-found(?:/)?$",
       "routeKeys": {},
       "namedRegex": "^/_not\\-found(?:/)?$"
+    },
+    {
+      "page": "/admin/admins",
+      "regex": "^/admin/admins(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/admin/admins(?:/)?$"
+    },
+    {
+      "page": "/admin/customers",
+      "regex": "^/admin/customers(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/admin/customers(?:/)?$"
+    },
+    {
+      "page": "/admin/dashboard",
+      "regex": "^/admin/dashboard(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/admin/dashboard(?:/)?$"
+    },
+    {
+      "page": "/admin/inquiries",
+      "regex": "^/admin/inquiries(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/admin/inquiries(?:/)?$"
+    },
+    {
+      "page": "/admin/inquiry/new",
+      "regex": "^/admin/inquiry/new(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/admin/inquiry/new(?:/)?$"
+    },
+    {
+      "page": "/admin/sellers",
+      "regex": "^/admin/sellers(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/admin/sellers(?:/)?$"
     },
     {
       "page": "/dashboard",
@@ -64,6 +133,30 @@
       "regex": "^/register(?:/)?$",
       "routeKeys": {},
       "namedRegex": "^/register(?:/)?$"
+    },
+    {
+      "page": "/seller/customers",
+      "regex": "^/seller/customers(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/seller/customers(?:/)?$"
+    },
+    {
+      "page": "/seller/dashboard",
+      "regex": "^/seller/dashboard(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/seller/dashboard(?:/)?$"
+    },
+    {
+      "page": "/seller/inquiries",
+      "regex": "^/seller/inquiries(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/seller/inquiries(?:/)?$"
+    },
+    {
+      "page": "/seller/inquiry/new",
+      "regex": "^/seller/inquiry/new(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/seller/inquiry/new(?:/)?$"
     }
   ],
   "dataRoutes": [],

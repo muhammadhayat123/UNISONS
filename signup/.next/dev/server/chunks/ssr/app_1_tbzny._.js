@@ -109,52 +109,164 @@ function Toast({ message, type, onClose }) {
 "use strict";
 
 __turbopack_context__.s([
+    "addPersonnel",
+    ()=>addPersonnel,
+    "createAdmin",
+    ()=>createAdmin,
+    "createCompany",
+    ()=>createCompany,
+    "createCustomer",
+    ()=>createCustomer,
+    "createInquiry",
+    ()=>createInquiry,
+    "createSeller",
+    ()=>createSeller,
+    "deleteAdmin",
+    ()=>deleteAdmin,
+    "deleteCustomer",
+    ()=>deleteCustomer,
+    "deleteInquiry",
+    ()=>deleteInquiry,
+    "deletePersonnel",
+    ()=>deletePersonnel,
+    "deleteSeller",
+    ()=>deleteSeller,
+    "downloadInquiryPDF",
+    ()=>downloadInquiryPDF,
+    "getAdmins",
+    ()=>getAdmins,
+    "getCompany",
+    ()=>getCompany,
+    "getCustomer",
+    ()=>getCustomer,
+    "getCustomerInquiries",
+    ()=>getCustomerInquiries,
+    "getCustomerPersonnel",
+    ()=>getCustomerPersonnel,
+    "getCustomers",
+    ()=>getCustomers,
+    "getInquiries",
+    ()=>getInquiries,
+    "getInquiry",
+    ()=>getInquiry,
+    "getSellers",
+    ()=>getSellers,
     "loginUser",
     ()=>loginUser,
     "registerUser",
-    ()=>registerUser
+    ()=>registerUser,
+    "toggleAdmin",
+    ()=>toggleAdmin,
+    "toggleSeller",
+    ()=>toggleSeller,
+    "updateAdmin",
+    ()=>updateAdmin,
+    "updateCompany",
+    ()=>updateCompany,
+    "updateCustomer",
+    ()=>updateCustomer,
+    "updateInquiry",
+    ()=>updateInquiry,
+    "updateInquiryStatus",
+    ()=>updateInquiryStatus,
+    "updatePersonnel",
+    ()=>updatePersonnel,
+    "updateSeller",
+    ()=>updateSeller
 ]);
-const BASE_URL = "http://127.0.0.1:8000";
-/**
- * Parse FastAPI error responses into a human-readable string.
- */ async function parseError(res) {
+const BASE_URL = 'http://127.0.0.1:8000';
+async function parseError(res) {
     try {
         const body = await res.json();
-        if (typeof body.detail === "string") return body.detail;
-        if (Array.isArray(body.detail)) {
-            return body.detail.map((e)=>e.msg).join(", ");
-        }
-    } catch  {
-    // fall through
-    }
+        if (typeof body.detail === 'string') return body.detail;
+        if (Array.isArray(body.detail)) return body.detail.map((e)=>e.msg).join(', ');
+    } catch  {}
     return `Request failed with status ${res.status}`;
+}
+function authHeaders() {
+    const token = ("TURBOPACK compile-time falsy", 0) ? "TURBOPACK unreachable" : null;
+    return {
+        'Content-Type': 'application/json',
+        ...("TURBOPACK compile-time falsy", 0) ? "TURBOPACK unreachable" : {}
+    };
+}
+async function request(method, path, body) {
+    const res = await fetch(`${BASE_URL}${path}`, {
+        method,
+        headers: authHeaders(),
+        body: body !== undefined ? JSON.stringify(body) : undefined
+    });
+    if (!res.ok) throw new Error(await parseError(res));
+    if (res.status === 204) return undefined;
+    return res.json();
 }
 async function registerUser(payload) {
     const res = await fetch(`${BASE_URL}/user/auth/register`, {
-        method: "POST",
+        method: 'POST',
         headers: {
-            "Content-Type": "application/json"
+            'Content-Type': 'application/json'
         },
         body: JSON.stringify(payload)
     });
-    if (!res.ok) {
-        throw new Error(await parseError(res));
-    }
+    if (!res.ok) throw new Error(await parseError(res));
     return res.json();
 }
 async function loginUser(payload) {
     const res = await fetch(`${BASE_URL}/user/auth/login`, {
-        method: "POST",
+        method: 'POST',
         headers: {
-            "Content-Type": "application/json"
+            'Content-Type': 'application/json'
         },
         body: JSON.stringify(payload)
     });
-    if (!res.ok) {
-        throw new Error(await parseError(res));
-    }
+    if (!res.ok) throw new Error(await parseError(res));
     return res.json();
 }
+const getCompany = ()=>request('GET', '/api/company');
+const createCompany = (data)=>request('POST', '/api/company', data);
+const updateCompany = (data)=>request('PUT', '/api/company', data);
+const getCustomers = (params = {})=>{
+    const q = new URLSearchParams(params).toString();
+    return request('GET', `/api/customers${q ? '?' + q : ''}`);
+};
+const createCustomer = (data)=>request('POST', '/api/customers', data);
+const getCustomer = (id)=>request('GET', `/api/customers/${id}`);
+const updateCustomer = (id, data)=>request('PUT', `/api/customers/${id}`, data);
+const deleteCustomer = (id)=>request('DELETE', `/api/customers/${id}`);
+const getCustomerInquiries = (id)=>request('GET', `/api/customers/${id}/inquiries`);
+const getCustomerPersonnel = (id)=>request('GET', `/api/customers/${id}/personnel`);
+const addPersonnel = (customerId, data)=>request('POST', `/api/customers/${customerId}/personnel`, data);
+const updatePersonnel = (customerId, personnelId, data)=>request('PUT', `/api/customers/${customerId}/personnel/${personnelId}`, data);
+const deletePersonnel = (customerId, personnelId)=>request('DELETE', `/api/customers/${customerId}/personnel/${personnelId}`);
+const getInquiries = (params = {})=>{
+    const q = new URLSearchParams(Object.fromEntries(Object.entries(params).filter(([, v])=>v !== undefined && v !== ''))).toString();
+    return request('GET', `/api/inquiries${q ? '?' + q : ''}`);
+};
+const createInquiry = (data)=>request('POST', '/api/inquiries', data);
+const getInquiry = (id)=>request('GET', `/api/inquiries/${id}`);
+const updateInquiry = (id, data)=>request('PUT', `/api/inquiries/${id}`, data);
+const updateInquiryStatus = (id, status)=>request('PATCH', `/api/inquiries/${id}/status`, {
+        status
+    });
+const deleteInquiry = (id)=>request('DELETE', `/api/inquiries/${id}`);
+const downloadInquiryPDF = async (id)=>{
+    const token = ("TURBOPACK compile-time falsy", 0) ? "TURBOPACK unreachable" : null;
+    const res = await fetch(`${BASE_URL}/api/inquiries/${id}/pdf`, {
+        headers: ("TURBOPACK compile-time falsy", 0) ? "TURBOPACK unreachable" : {}
+    });
+    if (!res.ok) throw new Error(await parseError(res));
+    return res.blob();
+};
+const getAdmins = ()=>request('GET', '/api/admins');
+const createAdmin = (data)=>request('POST', '/api/admins', data);
+const updateAdmin = (id, data)=>request('PUT', `/api/admins/${id}`, data);
+const toggleAdmin = (id)=>request('PATCH', `/api/admins/${id}/toggle-active`);
+const deleteAdmin = (id)=>request('DELETE', `/api/admins/${id}`);
+const getSellers = ()=>request('GET', '/api/sellers');
+const createSeller = (data)=>request('POST', '/api/sellers', data);
+const updateSeller = (id, data)=>request('PUT', `/api/sellers/${id}`, data);
+const toggleSeller = (id)=>request('PATCH', `/api/sellers/${id}/toggle-active`);
+const deleteSeller = (id)=>request('DELETE', `/api/sellers/${id}`);
 }),
 "[project]/app/register/page.tsx [app-ssr] (ecmascript)", ((__turbopack_context__) => {
 "use strict";

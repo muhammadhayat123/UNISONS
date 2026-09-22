@@ -2,12 +2,13 @@ from pathlib import Path
 from datetime import datetime, timedelta, timezone
 from typing import Optional
 import os
-
 import jwt
 from dotenv import load_dotenv
 from fastapi import Depends, HTTPException
 from fastapi.security import OAuth2PasswordBearer
 from passlib.context import CryptContext
+from sqlalchemy.orm import Session
+from src.backend.config.db import get_db
 
 # Resolve .env relative to this file (backend root)
 _env_path = Path(__file__).resolve().parents[3] / ".env"
@@ -84,3 +85,19 @@ def hash_password(password: str) -> str:
 def get_current_user(token: str = Depends(oauth2_scheme)) -> dict:
     """FastAPI dependency that returns the current authenticated user's payload."""
     return verify_token(token)
+
+
+def require_admin(current_user: dict = Depends(get_current_user)) -> dict:
+    """FastAPI dependency that raises 403 if user is not admin."""
+    if current_user.get("designation") != "admin":
+        raise HTTPException(status_code=403, detail="Admin access required")
+    return current_user
+
+
+def get_user_from_db(current_user: dict = Depends(get_current_user), db: Session = Depends(get_db)):
+    """Returns the full User ORM object from the database."""
+    from src.backend.models.user_model import User
+    user = db.query(User).filter(User.id == current_user["user_id"]).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    return user

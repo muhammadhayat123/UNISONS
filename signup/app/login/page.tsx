@@ -78,11 +78,18 @@ export default function LoginPage() {
           id: res.data.id,
           username: res.data.username,
           email: res.data.email,
+          designation: res.data.designation,
         })
       );
 
       setToast({ message: `Welcome back, ${res.data.username}!`, type: "success" });
-      setTimeout(() => router.push("/dashboard"), 1200);
+      setTimeout(() => {
+        if (res.data.designation === 'admin') {
+          router.push("/admin/dashboard");
+        } else {
+          router.push("/seller/dashboard");
+        }
+      }, 1200);
     } catch (err: unknown) {
       const message =
         err instanceof Error ? err.message : "Something went wrong. Please try again.";

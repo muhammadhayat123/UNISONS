@@ -1,5 +1,6 @@
 import enum
 from sqlalchemy import Column, Integer, String, Boolean, DateTime, Enum
+from sqlalchemy.orm import relationship
 from datetime import datetime
 from src.backend.config.db import Base
 
@@ -16,6 +17,7 @@ class User(Base):
     username = Column(String, unique=True, index=True, nullable=False)
     email = Column(String, unique=True, index=True, nullable=False)
     password = Column(String, nullable=False)
+    phone = Column(String, nullable=True)
     designation = Column(
         Enum(Designation, name="designation_enum"),
         nullable=False,
@@ -24,3 +26,5 @@ class User(Base):
     )
     is_active = Column(Boolean, default=True)
     created_at = Column(DateTime, default=datetime.utcnow)
+
+    inquiries = relationship("Inquiry", back_populates="seller")
