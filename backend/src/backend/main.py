@@ -14,6 +14,7 @@ from src.backend.routes.inquiry_route import inquiry_route
 from src.backend.routes.admin_route import admin_route
 from src.backend.routes.seller_route import seller_route
 from src.backend.routes.websocket_route import ws_route
+from src.backend.routes.tracking_route import tracking_route, admin_tracking_route, ws_tracking_route
 
 app = FastAPI(title="Inquiry Management API", version="2.0.0")
 
@@ -28,10 +29,15 @@ app.add_middleware(
 # Auth (existing)
 app.include_router(user_route, prefix="/user", tags=["user"])
 
-# New routes
+# Existing routes
 app.include_router(company_route)
 app.include_router(customer_route)
 app.include_router(inquiry_route)
 app.include_router(admin_route)
 app.include_router(seller_route)
 app.include_router(ws_route)
+
+# Seller Location Tracking (additive)
+app.include_router(tracking_route)
+app.include_router(admin_tracking_route)
+app.include_router(ws_tracking_route)
