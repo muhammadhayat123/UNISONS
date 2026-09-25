@@ -10,19 +10,18 @@ export function InquiryWizard({ isAdmin = false }: { isAdmin?: boolean }) {
   const searchParams = useSearchParams();
   const editId = searchParams.get('edit');
   const [isEditing, setIsEditing] = useState(false);
-  const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [toast, setToast] = useState<{message: string, type: 'success'|'error'}|null>(null);
 
   // Form State
   const [customerId, setCustomerId] = useState<number | null>(null);
-  const [isNewCustomer, setIsNewCustomer] = useState(false);
   const [customerData, setCustomerData] = useState({
     customer_name: '', inquiry_date: new Date().toISOString().split('T')[0],
-    sector: '', factory_address: '', phone: '', ho_address: '', website: '', email: ''
+    sector: '', factory_address: '', phone: '', ho_address: '', website: '', email: '', city: ''
   });
 
   const [personnel, setPersonnel] = useState<any[]>([]);
+  const [availablePersonnel, setAvailablePersonnel] = useState<any[]>([]);
   
   const [additionalInfo, setAdditionalInfo] = useState({
     employee: '', source: '', local_import: 'Local', new_repeat: 'New',
@@ -54,17 +53,16 @@ export function InquiryWizard({ isAdmin = false }: { isAdmin?: boolean }) {
   useEffect(() => {
     if (editId) {
       setIsEditing(true);
-      loadInquiry(Number(editId));
+      loadInquiry(editId as string);
     }
   }, [editId]);
 
-  async function loadInquiry(id: number) {
+  async function loadInquiry(id: string | number) {
     try {
       setLoading(true);
       const res = await getInquiry(id);
       if (res.customer_id) {
         setCustomerId(res.customer_id);
-        setIsNewCustomer(false);
       }
       if (res.additional_info) {
         setAdditionalInfo({
@@ -131,29 +129,12 @@ export function InquiryWizard({ isAdmin = false }: { isAdmin?: boolean }) {
     }
   }
 
-  const handleNext = () => {
-    if (step === 1 && !customerId && !isNewCustomer) {
-      setToast({ message: 'Please select or create a customer', type: 'error' });
-      return;
-    }
-    if (step === 1 && isNewCustomer && !customerData.customer_name) {
-      setToast({ message: 'Customer name is required', type: 'error' });
-      return;
-    }
-    if (step === 8 && products.length > 0 && products.some(p => !p.product_name)) {
-      setToast({ message: 'All products must have a name', type: 'error' });
-      return;
-    }
-    setStep(s => Math.min(10, s + 1));
-  };
-  const handlePrev = () => setStep(s => Math.max(1, s - 1));
-
   const submitForm = async () => {
     try {
       setLoading(true);
       let finalCustomerId = customerId;
 
-      if (isNewCustomer || !finalCustomerId) {
+      if (!finalCustomerId) {
         const cRes = await createCustomer({
           ...customerData,
           personnel: personnel
@@ -218,7 +199,7 @@ export function InquiryWizard({ isAdmin = false }: { isAdmin?: boolean }) {
       }
       
       setTimeout(() => {
-        router.push(isAdmin ? `/admin/inquiries/${iRes.id}` : `/seller/inquiries/${iRes.id}`);
+        router.push(isAdmin ? `/admin/inquiries` : `/seller/inquiries`);
       }, 1500);
 
     } catch (err: any) {
@@ -231,63 +212,73 @@ export function InquiryWizard({ isAdmin = false }: { isAdmin?: boolean }) {
     <div className="max-w-4xl mx-auto pb-12 px-0">
       {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
       
-      <div className="mb-6">
-        <h1 className="text-xl sm:text-2xl font-bold text-gray-800">{isEditing ? 'Edit Inquiry' : 'New Inquiry'}</h1>
-        <div className="mt-3 flex items-center justify-between text-xs sm:text-sm font-medium text-gray-500">
-          <span>Step {step} of 10</span>
-          <span>{Math.round((step / 10) * 100)}% Completed</span>
-        </div>
-        <div className="mt-2 w-full bg-gray-200 rounded-full h-2">
-          <div className="bg-orange-600 h-2 rounded-full transition-all duration-300" style={{ width: `${(step / 10) * 100}%` }}></div>
-        </div>
+      <div className="mb-6 flex items-center justify-between border-b border-gray-200 pb-4">
+        <h1 className="text-2xl font-bold text-gray-900">{isEditing ? 'Edit Inquiry' : 'Create New Inquiry'}</h1>
       </div>
 
-      <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 sm:p-6 mb-5">
-        {step === 1 && <Step1Customer 
-          customerId={customerId} setCustomerId={setCustomerId} 
-          isNew={isNewCustomer} setIsNew={setIsNewCustomer}
-          data={customerData} setData={setCustomerData} 
-        />}
-        {step === 2 && <Step2Personnel personnel={personnel} setPersonnel={setPersonnel} />}
-        {step === 3 && <Step3Additional data={additionalInfo} setData={setAdditionalInfo} />}
-        {step === 4 && <Step4Furnace data={furnaceDetails} setData={setFurnaceDetails} />}
-        {step === 5 && <Step5CCM data={ccmDetails} setData={setCcmDetails} />}
-        {step === 6 && <Step6RollingMill data={rollingMill} setData={setRollingMill} />}
-        {step === 7 && <Step7Stands data={rollingMill} setData={setRollingMill} />}
-        {step === 8 && <Step8Products data={products} setData={setProducts} />}
-        {step === 9 && <Step9Extra 
-          instructions={specialInstructions} setInstructions={setSpecialInstructions}
-          signatures={signatures} setSignatures={setSignatures}
-        />}
-        {step === 10 && <Step10Review />}
-      </div>
-
-      <div className="flex justify-between">
-        <button 
-          onClick={handlePrev} 
-          disabled={step === 1 || loading}
-          className="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
-        >
-          Previous
-        </button>
+      <div className="space-y-6">
+        <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
+          <Step1Customer 
+            customerId={customerId} setCustomerId={setCustomerId} 
+            data={customerData} setData={setCustomerData}
+          />
+        </div>
         
-        {step < 10 ? (
-          <button 
-            onClick={handleNext}
-            className="rounded-lg bg-orange-600 px-4 py-2 text-sm font-medium text-white hover:bg-orange-700"
-          >
-            Next Step
-          </button>
-        ) : (
-          <button 
-            onClick={submitForm}
-            disabled={loading}
-            className="flex items-center rounded-lg bg-orange-600 px-6 py-2 text-sm font-bold text-white hover:bg-orange-700 disabled:opacity-50"
-          >
-            {loading ? <LoadingSpinner className="h-4 w-4 mr-2 text-white" /> : null}
-            Submit Inquiry
-          </button>
-        )}
+        <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
+          <Step2Personnel personnel={personnel} setPersonnel={setPersonnel} />
+        </div>
+
+        <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
+          <Step3Additional data={additionalInfo} setData={setAdditionalInfo} />
+        </div>
+
+        <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
+          <Step4Furnace data={furnaceDetails} setData={setFurnaceDetails} />
+        </div>
+
+        <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
+          <Step5CCM data={ccmDetails} setData={setCcmDetails} />
+        </div>
+
+        <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
+          <Step6RollingMill data={rollingMill} setData={setRollingMill} />
+          <div className="mt-6 border-t pt-6">
+            <Step7Stands data={rollingMill} setData={setRollingMill} />
+          </div>
+        </div>
+
+        <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
+          <Step8Products data={products} setData={setProducts} />
+        </div>
+
+        <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
+          <Step9Extra 
+            instructions={specialInstructions} setInstructions={setSpecialInstructions}
+            signatures={signatures} setSignatures={setSignatures}
+          />
+        </div>
+      </div>
+
+      <div className="mt-8 flex justify-end">
+        <button 
+          onClick={() => {
+            if (!customerId && !customerData.customer_name) {
+              setToast({ message: 'Customer name is required', type: 'error' });
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+              return;
+            }
+            if (products.length > 0 && products.some(p => !p.product_name)) {
+              setToast({ message: 'All products must have a name', type: 'error' });
+              return;
+            }
+            submitForm();
+          }}
+          disabled={loading}
+          className="flex items-center rounded-lg bg-orange-600 px-8 py-3 text-base font-bold text-white hover:bg-orange-700 shadow-sm disabled:opacity-50 transition-colors"
+        >
+          {loading ? <LoadingSpinner className="h-5 w-5 mr-3 text-white" /> : null}
+          {isEditing ? "Save Changes" : "Submit Inquiry"}
+        </button>
       </div>
     </div>
   );
@@ -295,52 +286,22 @@ export function InquiryWizard({ isAdmin = false }: { isAdmin?: boolean }) {
 
 // -- Steps Components --
 
-function Step1Customer({ customerId, setCustomerId, isNew, setIsNew, data, setData }: any) {
-  const [search, setSearch] = useState('');
-  const [results, setResults] = useState<any[]>([]);
-
-  useEffect(() => {
-    if (search.length > 2) {
-      getCustomers({ search, limit: 5 }).then(res => setResults(res?.customers || []));
-    } else {
-      setResults([]);
-    }
-  }, [search]);
-
+function Step1Customer({ data, setData }: any) {
   return (
     <div className="space-y-4">
       <h2 className="text-xl font-bold">Customer Details</h2>
-      <div className="flex gap-4 mb-4">
-        <button className={`px-4 py-2 rounded-lg text-sm font-medium ${!isNew ? 'bg-orange-100 text-orange-700' : 'bg-gray-100 text-gray-700'}`} onClick={() => setIsNew(false)}>Select Existing</button>
-        <button className={`px-4 py-2 rounded-lg text-sm font-medium ${isNew ? 'bg-orange-100 text-orange-700' : 'bg-gray-100 text-gray-700'}`} onClick={() => setIsNew(true)}>Create New</button>
+      
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
+        <div><label className="block text-sm font-medium text-gray-700 mb-1">Customer Name *</label><input autoFocus required value={data.customer_name} onChange={e=>setData({...data, customer_name: e.target.value})} className="w-full p-2 border border-gray-300 rounded-md text-sm focus:ring-orange-500 focus:border-orange-500" /></div>
+        <div><label className="block text-sm font-medium text-gray-700 mb-1">Inquiry Date</label><input type="date" value={data.inquiry_date} onChange={e=>setData({...data, inquiry_date: e.target.value})} className="w-full p-2 border border-gray-300 rounded-md text-sm focus:ring-orange-500 focus:border-orange-500" /></div>
+        <div><label className="block text-sm font-medium text-gray-700 mb-1">Sector</label><input value={data.sector} onChange={e=>setData({...data, sector: e.target.value})} className="w-full p-2 border border-gray-300 rounded-md text-sm focus:ring-orange-500 focus:border-orange-500" /></div>
+        <div><label className="block text-sm font-medium text-gray-700 mb-1">City</label><input value={data.city} onChange={e=>setData({...data, city: e.target.value})} className="w-full p-2 border border-gray-300 rounded-md text-sm focus:ring-orange-500 focus:border-orange-500" /></div>
+        <div><label className="block text-sm font-medium text-gray-700 mb-1">Email</label><input type="email" value={data.email} onChange={e=>setData({...data, email: e.target.value})} className="w-full p-2 border border-gray-300 rounded-md text-sm focus:ring-orange-500 focus:border-orange-500" /></div>
+        <div><label className="block text-sm font-medium text-gray-700 mb-1">Phone</label><input value={data.phone} onChange={e=>setData({...data, phone: e.target.value})} className="w-full p-2 border border-gray-300 rounded-md text-sm focus:ring-orange-500 focus:border-orange-500" /></div>
+        <div className="sm:col-span-2"><label className="block text-sm font-medium text-gray-700 mb-1">Website</label><input value={data.website} onChange={e=>setData({...data, website: e.target.value})} className="w-full p-2 border border-gray-300 rounded-md text-sm focus:ring-orange-500 focus:border-orange-500" /></div>
+        <div className="sm:col-span-2"><label className="block text-sm font-medium text-gray-700 mb-1">Factory Address</label><textarea value={data.factory_address} onChange={e=>setData({...data, factory_address: e.target.value})} className="w-full p-2 border border-gray-300 rounded-md text-sm focus:ring-orange-500 focus:border-orange-500" rows={2} /></div>
+        <div className="sm:col-span-2"><label className="block text-sm font-medium text-gray-700 mb-1">HO Address</label><textarea value={data.ho_address} onChange={e=>setData({...data, ho_address: e.target.value})} className="w-full p-2 border border-gray-300 rounded-md text-sm focus:ring-orange-500 focus:border-orange-500" rows={2} /></div>
       </div>
-
-      {!isNew ? (
-        <div>
-          <input type="text" placeholder="Search customer by name..." value={search} onChange={e => setSearch(e.target.value)} className="w-full p-2 border rounded-md" />
-          {results.length > 0 && (
-            <div className="mt-2 border rounded-md divide-y">
-              {results.map(c => (
-                <div key={c.id} onClick={() => { setCustomerId(c.id); setSearch(c.customer_name); setResults([]); }} className={`p-3 cursor-pointer hover:bg-gray-50 ${customerId === c.id ? 'bg-orange-50 border-l-4 border-orange-500' : ''}`}>
-                  <div className="font-medium">{c.customer_name}</div>
-                  <div className="text-xs text-gray-500">{c.email} | {c.phone}</div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div><label className="block text-sm font-medium text-gray-700 mb-1">Customer Name *</label><input required value={data.customer_name} onChange={e=>setData({...data, customer_name: e.target.value})} className="w-full p-2 border rounded-md text-sm focus:ring-orange-500 focus:border-orange-500" /></div>
-          <div><label className="block text-sm font-medium text-gray-700 mb-1">Inquiry Date</label><input type="date" value={data.inquiry_date} onChange={e=>setData({...data, inquiry_date: e.target.value})} className="w-full p-2 border rounded-md text-sm focus:ring-orange-500 focus:border-orange-500" /></div>
-          <div><label className="block text-sm font-medium text-gray-700 mb-1">Email</label><input type="email" value={data.email} onChange={e=>setData({...data, email: e.target.value})} className="w-full p-2 border rounded-md text-sm focus:ring-orange-500 focus:border-orange-500" /></div>
-          <div><label className="block text-sm font-medium text-gray-700 mb-1">Phone</label><input value={data.phone} onChange={e=>setData({...data, phone: e.target.value})} className="w-full p-2 border rounded-md text-sm focus:ring-orange-500 focus:border-orange-500" /></div>
-          <div><label className="block text-sm font-medium text-gray-700 mb-1">Sector</label><input value={data.sector} onChange={e=>setData({...data, sector: e.target.value})} className="w-full p-2 border rounded-md text-sm focus:ring-orange-500 focus:border-orange-500" /></div>
-          <div><label className="block text-sm font-medium text-gray-700 mb-1">Website</label><input value={data.website} onChange={e=>setData({...data, website: e.target.value})} className="w-full p-2 border rounded-md text-sm focus:ring-orange-500 focus:border-orange-500" /></div>
-          <div className="sm:col-span-2"><label className="block text-sm font-medium text-gray-700 mb-1">Factory Address</label><textarea value={data.factory_address} onChange={e=>setData({...data, factory_address: e.target.value})} className="w-full p-2 border rounded-md text-sm" rows={2} /></div>
-          <div className="sm:col-span-2"><label className="block text-sm font-medium text-gray-700 mb-1">HO Address</label><textarea value={data.ho_address} onChange={e=>setData({...data, ho_address: e.target.value})} className="w-full p-2 border rounded-md text-sm" rows={2} /></div>
-        </div>
-      )}
     </div>
   );
 }
@@ -358,21 +319,23 @@ function Step2Personnel({ personnel, setPersonnel }: any) {
     <div>
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-xl font-bold">Personnel Details</h2>
-        <button onClick={addPerson} className="text-sm bg-gray-100 px-3 py-1 rounded hover:bg-gray-200">+ Add Person</button>
+        <button onClick={addPerson} className="text-sm border border-gray-300 bg-white px-3 py-1.5 rounded-md font-medium text-gray-700 hover:bg-gray-50">+ Add Person</button>
       </div>
+      
       {personnel.map((p:any, i:number) => (
-        <div key={i} className="p-4 border rounded-lg mb-4 bg-gray-50 relative">
-          <button onClick={() => remove(i)} className="absolute top-2 right-2 text-red-500 hover:text-red-700 text-sm">Remove</button>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-2">
-            <div><label className="text-xs">Name *</label><input value={p.concerned_person} onChange={e=>update(i,'concerned_person',e.target.value)} className="w-full p-1.5 border rounded text-sm" /></div>
-            <div><label className="text-xs">Designation</label><input value={p.designation} onChange={e=>update(i,'designation',e.target.value)} className="w-full p-1.5 border rounded text-sm" /></div>
-            <div><label className="text-xs">Department</label><input value={p.department} onChange={e=>update(i,'department',e.target.value)} className="w-full p-1.5 border rounded text-sm" /></div>
-            <div><label className="text-xs">Email</label><input value={p.email} onChange={e=>update(i,'email',e.target.value)} className="w-full p-1.5 border rounded text-sm" /></div>
-            <div><label className="text-xs">Phone</label><input value={p.phone} onChange={e=>update(i,'phone',e.target.value)} className="w-full p-1.5 border rounded text-sm" /></div>
+        <div key={i} className="p-4 border border-gray-200 rounded-xl mb-4 bg-gray-50 relative">
+          <button onClick={() => remove(i)} className="absolute top-3 right-3 text-red-500 hover:text-red-700 text-sm font-semibold">Remove</button>
+          
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div><label className="text-xs font-semibold text-gray-600 mb-1 block">Name *</label><input required value={p.concerned_person} onChange={e=>update(i,'concerned_person',e.target.value)} className="w-full p-2 border border-gray-300 rounded-md text-sm focus:ring-orange-500" /></div>
+            <div><label className="text-xs font-semibold text-gray-600 mb-1 block">Designation</label><input value={p.designation} onChange={e=>update(i,'designation',e.target.value)} className="w-full p-2 border border-gray-300 rounded-md text-sm focus:ring-orange-500" /></div>
+            <div><label className="text-xs font-semibold text-gray-600 mb-1 block">Department</label><input value={p.department} onChange={e=>update(i,'department',e.target.value)} className="w-full p-2 border border-gray-300 rounded-md text-sm focus:ring-orange-500" /></div>
+            <div><label className="text-xs font-semibold text-gray-600 mb-1 block">Email</label><input type="email" value={p.email} onChange={e=>update(i,'email',e.target.value)} className="w-full p-2 border border-gray-300 rounded-md text-sm focus:ring-orange-500" /></div>
+            <div><label className="text-xs font-semibold text-gray-600 mb-1 block">Phone</label><input value={p.phone} onChange={e=>update(i,'phone',e.target.value)} className="w-full p-2 border border-gray-300 rounded-md text-sm focus:ring-orange-500" /></div>
           </div>
         </div>
       ))}
-      {personnel.length === 0 && <p className="text-sm text-gray-500">No personnel added. (Optional)</p>}
+      {personnel.length === 0 && <p className="text-sm text-gray-500 italic p-4 bg-gray-50 border border-gray-100 rounded-lg">No personnel added. Click "+ Add Person" to specify contacts for this inquiry.</p>}
     </div>
   );
 }

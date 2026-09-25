@@ -9,7 +9,8 @@ import Toast from '@/app/components/ui/Toast';
 import { ConfirmModal } from '@/app/components/ui/ConfirmModal';
 
 export default function AdminInquiryDetail() {
-  const { id } = useParams();
+  const params = useParams();
+  const id = params?.id as string;
   const router = useRouter();
   const [inquiry, setInquiry] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -24,7 +25,7 @@ export default function AdminInquiryDetail() {
   async function fetchInquiry() {
     try {
       setLoading(true);
-      const res = await getInquiry(Number(id));
+      const res = await getInquiry(id);
       setInquiry(res);
       setStatus(res.status);
     } catch (err: any) {
@@ -36,7 +37,7 @@ export default function AdminInquiryDetail() {
 
   const handleStatusChange = async () => {
     try {
-      await updateInquiryStatus(Number(id), status);
+      await updateInquiryStatus(id, status);
       setToast({ message: 'Status updated', type: 'success' });
       fetchInquiry();
     } catch (err: any) {
@@ -46,7 +47,7 @@ export default function AdminInquiryDetail() {
 
   const handleDownload = async () => {
     try {
-      const blob = await downloadInquiryPDF(Number(id));
+      const blob = await downloadInquiryPDF(id);
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
@@ -61,7 +62,7 @@ export default function AdminInquiryDetail() {
 
   const handleDelete = async () => {
     try {
-      await deleteInquiry(Number(id));
+      await deleteInquiry(id);
       router.push('/admin/inquiries');
     } catch (err: any) {
       setToast({ message: err.message, type: 'error' });
@@ -105,10 +106,9 @@ export default function AdminInquiryDetail() {
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
             Download PDF
           </button>
-          <Link href={`/admin/inquiry/new?edit=${id}`} className="flex items-center gap-2 border border-gray-300 bg-white text-gray-700 px-4 py-2 rounded-md text-sm font-medium hover:bg-gray-50">
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
-            Edit Inquiry
-          </Link>
+          <button onClick={() => router.back()} className="flex items-center gap-2 border border-gray-300 bg-white text-gray-700 px-4 py-2 rounded-md text-sm font-medium hover:bg-gray-50">
+            ← Back
+          </button>
           <button onClick={() => setConfirmModal(true)} className="flex items-center gap-2 border border-red-300 bg-white text-red-600 px-4 py-2 rounded-md text-sm font-medium hover:bg-red-50">
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
             Delete Inquiry

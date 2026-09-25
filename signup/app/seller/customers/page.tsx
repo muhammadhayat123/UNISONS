@@ -1,8 +1,9 @@
 "use client";
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { getCustomers } from '@/app/lib/api';
+import { getCustomers, deleteCustomer } from '@/app/lib/api';
 import { LoadingSpinner } from '@/app/components/ui/LoadingSpinner';
+import { ConfirmModal } from '@/app/components/ui/ConfirmModal';
 import Toast from '@/app/components/ui/Toast';
 
 export default function SellerCustomers() {
@@ -13,6 +14,7 @@ export default function SellerCustomers() {
   const limit = 20;
   
   const [toast, setToast] = useState<{message: string, type: 'success'|'error'}|null>(null);
+  const [confirmModal, setConfirmModal] = useState({ isOpen: false, id: 0, isLoading: false });
 
   useEffect(() => {
     fetchCustomers();
@@ -30,12 +32,36 @@ export default function SellerCustomers() {
     }
   }
 
+  const handleDelete = async () => {
+    setConfirmModal(prev => ({ ...prev, isLoading: true }));
+    try {
+      await deleteCustomer(confirmModal.id);
+      setToast({ message: 'Customer deleted successfully', type: 'success' });
+      setConfirmModal({ isOpen: false, id: 0, isLoading: false });
+      fetchCustomers();
+    } catch (err: any) {
+      setToast({ message: err.message, type: 'error' });
+      setConfirmModal(prev => ({ ...prev, isLoading: false }));
+    }
+  };
+
   return (
     <div className="space-y-6">
       {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
+      <ConfirmModal
+        isOpen={confirmModal.isOpen}
+        title="Delete Customer"
+        message="Are you sure you want to delete this customer? This will also remove all their inquiries and personnel."
+        isLoading={confirmModal.isLoading}
+        onConfirm={handleDelete}
+        onCancel={() => setConfirmModal({ isOpen: false, id: 0, isLoading: false })}
+      />
 
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-800">Company Profiles</h1>
+        <h1 className="text-2xl font-bold text-gray-800">Customers</h1>
+        <Link href="/seller/customers/new" className="rounded-lg bg-orange-600 px-4 py-2 text-sm font-medium text-white hover:bg-orange-700 shadow-sm text-center">
+          + Create Customer
+        </Link>
       </div>
 
       <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4">
@@ -53,8 +79,8 @@ export default function SellerCustomers() {
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">ID</th>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Name</th>
+                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Customer ID</th>
+                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Customer Name</th>
                 <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Sector</th>
                 <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Contact</th>
                 <th className="px-6 py-3 text-right text-xs font-semibold text-gray-500 uppercase">Actions</th>
@@ -76,7 +102,8 @@ export default function SellerCustomers() {
                       <div>{c.phone || '-'}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-3">
-                      <Link href={c.latest_inquiry_id ? `/seller/inquiries/${c.latest_inquiry_id}` : `#`} className="text-orange-600 hover:text-orange-900">View Details</Link>
+                      <Link href={`/seller/customers/${c.id}`} className="text-orange-600 hover:text-orange-900">View</Link>
+                      <button onClick={() => setConfirmModal({ isOpen: true, id: c.id, isLoading: false })} className="text-red-600 hover:text-red-900">Delete</button>
                     </td>
                   </tr>
                 ))

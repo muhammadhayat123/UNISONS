@@ -1,4 +1,4 @@
-const BASE_URL = 'http://127.0.0.1:8000';
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://unisonsbackend-production.up.railway.app';
 
 export type Designation = 'admin' | 'seller';
 
@@ -19,37 +19,38 @@ async function parseError(res: Response): Promise<string> {
   return `Request failed with status ${res.status}`;
 }
 
-function authHeaders(): Record<string, string> {
+export async function apiCall<T = any>(endpoint: string, options: RequestInit = {}): Promise<T> {
   const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
-  return {
+  const headers: HeadersInit = {
     'Content-Type': 'application/json',
     ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    ...options.headers,
   };
-}
 
-async function request<T>(method: string, path: string, body?: unknown): Promise<T> {
-  const res = await fetch(`${BASE_URL}${path}`, {
-    method,
-    headers: authHeaders(),
-    body: body !== undefined ? JSON.stringify(body) : undefined,
+  const res = await fetch(`${BASE_URL}${endpoint}`, {
+    ...options,
+    headers,
   });
+
   if (!res.ok) throw new Error(await parseError(res));
   if (res.status === 204) return undefined as T;
   return res.json();
 }
 
-// Auth
-export async function registerUser(payload: { username: string; email: string; password: string; designation: Designation }): Promise<AuthResponse> {
-  const res = await fetch(`${BASE_URL}/user/auth/register`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-  if (!res.ok) throw new Error(await parseError(res));
-  return res.json();
+async function request<T>(method: string, path: string, body?: unknown): Promise<T> {
+  return apiCall<T>(path, {
+    method,
+    body: body !== undefined ? JSON.stringify(body) : undefined,
+  });
 }
 
-export async function loginUser(payload: { email: string; password: string }): Promise<AuthResponse> {
-  const res = await fetch(`${BASE_URL}/user/auth/login`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-  if (!res.ok) throw new Error(await parseError(res));
-  return res.json();
-}
+// Auth
+export const authService = {
+  login: (payload: { email: string; password: string }): Promise<AuthResponse> =>
+    apiCall<AuthResponse>('/user/auth/login', { method: 'POST', body: JSON.stringify(payload) }),
+  signup: (payload: { username: string; email: string; password: string; designation: Designation }): Promise<AuthResponse> =>
+    apiCall<AuthResponse>('/user/auth/register', { method: 'POST', body: JSON.stringify(payload) }),
+};
 
 // Company
 export const getCompany = () => request<any>('GET', '/api/company');
@@ -77,11 +78,11 @@ export const getInquiries = (params: Record<string, any> = {}) => {
   return request<any>('GET', `/api/inquiries${q ? '?' + q : ''}`);
 };
 export const createInquiry = (data: any) => request<any>('POST', '/api/inquiries', data);
-export const getInquiry = (id: number) => request<any>('GET', `/api/inquiries/${id}`);
-export const updateInquiry = (id: number, data: any) => request<any>('PUT', `/api/inquiries/${id}`, data);
-export const updateInquiryStatus = (id: number, status: string) => request<any>('PATCH', `/api/inquiries/${id}/status`, { status });
-export const deleteInquiry = (id: number) => request<void>('DELETE', `/api/inquiries/${id}`);
-export const downloadInquiryPDF = async (id: number): Promise<Blob> => {
+export const getInquiry = (id: number | string) => request<any>('GET', `/api/inquiries/${id}`);
+export const updateInquiry = (id: number | string, data: any) => request<any>('PUT', `/api/inquiries/${id}`, data);
+export const updateInquiryStatus = (id: number | string, status: string) => request<any>('PATCH', `/api/inquiries/${id}/status`, { status });
+export const deleteInquiry = (id: number | string) => request<void>('DELETE', `/api/inquiries/${id}`);
+export const downloadInquiryPDF = async (id: number | string): Promise<Blob> => {
   const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
   const res = await fetch(`${BASE_URL}/api/inquiries/${id}/pdf`, { headers: token ? { Authorization: `Bearer ${token}` } : {} });
   if (!res.ok) throw new Error(await parseError(res));
@@ -101,3 +102,5 @@ export const createSeller = (data: any) => request<any>('POST', '/api/sellers', 
 export const updateSeller = (id: number, data: any) => request<any>('PUT', `/api/sellers/${id}`, data);
 export const toggleSeller = (id: number) => request<any>('PATCH', `/api/sellers/${id}/toggle-active`);
 export const deleteSeller = (id: number) => request<void>('DELETE', `/api/sellers/${id}`);
+
+export const getDashboardStats = () => request<any>('GET', '/api/inquiries/dashboard/stats');

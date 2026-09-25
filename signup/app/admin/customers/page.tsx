@@ -58,7 +58,10 @@ export default function AdminCustomers() {
       />
 
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-800">Company Profiles</h1>
+        <h1 className="text-2xl font-bold text-gray-800">Customers</h1>
+        <Link href="/admin/customers/new" className="rounded-lg bg-orange-600 px-4 py-2 text-sm font-medium text-white hover:bg-orange-700 shadow-sm text-center">
+          + Create Customer
+        </Link>
       </div>
 
       <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4">
@@ -76,8 +79,8 @@ export default function AdminCustomers() {
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">ID</th>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Name</th>
+                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Customer ID</th>
+                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Customer Name</th>
                 <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Sector</th>
                 <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Contact</th>
                 <th className="px-6 py-3 text-right text-xs font-semibold text-gray-500 uppercase">Actions</th>
@@ -99,7 +102,7 @@ export default function AdminCustomers() {
                       <div>{c.phone || '-'}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-3">
-                      <Link href={c.latest_inquiry_id ? `/admin/inquiries/${c.latest_inquiry_id}` : `#`} className="text-orange-600 hover:text-orange-900">View Details</Link>
+                      <Link href={`/admin/customers/${c.id}`} className="text-orange-600 hover:text-orange-900">View</Link>
                       <button onClick={() => setConfirmModal({ isOpen: true, id: c.id, isLoading: false })} className="text-red-600 hover:text-red-900">Delete</button>
                     </td>
                   </tr>

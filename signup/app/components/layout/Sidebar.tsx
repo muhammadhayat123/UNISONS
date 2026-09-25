@@ -11,20 +11,42 @@ interface SidebarProps {
   onClose: () => void;
 }
 
-const adminLinks = [
+type NavItem = {
+  href?: string;
+  label: string;
+  icon: string;
+  subItems?: { href: string; label: string }[];
+  basePath?: string;
+};
+
+const customerIcon = "M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z";
+const inquiriesIcon = "M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z";
+
+const adminLinks: NavItem[] = [
   { href: "/admin/dashboard", label: "Dashboard", icon: "M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" },
-  { href: "/admin/inquiries", label: "Inquiries", icon: "M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" },
-  { href: "/admin/customers", label: "Company Profiles", icon: "M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" },
+  { label: "Customer", icon: customerIcon, basePath: "/admin/customers", subItems: [
+      { href: "/admin/customers/new", label: "Create Customer" },
+      { href: "/admin/customers", label: "View Customers" },
+  ] },
+  { label: "Inquiries", icon: inquiriesIcon, basePath: "/admin/inquiries", subItems: [
+      { href: "/admin/inquiry/new", label: "Create Inquiry" },
+      { href: "/admin/inquiries", label: "View Inquiries" },
+  ] },
   { href: "/admin/sellers", label: "Sellers", icon: "M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" },
   { href: "/admin/admins", label: "Admins", icon: "M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" },
   { href: "/admin/tracking", label: "Seller Tracking", icon: "M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z M15 11a3 3 0 11-6 0 3 3 0 016 0z" },
 ];
 
-const sellerLinks = [
+const sellerLinks: NavItem[] = [
   { href: "/seller/dashboard", label: "Dashboard", icon: "M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" },
-  { href: "/seller/inquiries", label: "Inquiries", icon: "M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" },
-  { href: "/seller/customers", label: "Company Profiles", icon: "M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" },
-  { href: "/seller/inquiry/new", label: "New Inquiry", icon: "M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" },
+  { label: "Customer", icon: customerIcon, basePath: "/seller/customers", subItems: [
+      { href: "/seller/customers/new", label: "Create Customer" },
+      { href: "/seller/customers", label: "View Customers" },
+  ] },
+  { label: "Inquiries", icon: inquiriesIcon, basePath: "/seller/inquiries", subItems: [
+      { href: "/seller/inquiry/new", label: "Create Inquiry" },
+      { href: "/seller/inquiries", label: "View Inquiries" },
+  ] },
   { href: "/seller/tracking", label: "Live Tracking", icon: "M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z M15 11a3 3 0 11-6 0 3 3 0 016 0z" },
 ];
 
@@ -38,6 +60,25 @@ export function Sidebar({ role, isOpen, onClose }: SidebarProps) {
     const stored = getStoredUser();
     if (stored) setUser({ username: stored.username, email: stored.email, designation: stored.designation });
   }, []);
+
+  const [expandedMenus, setExpandedMenus] = useState<Record<string, boolean>>({});
+
+  useEffect(() => {
+    const newExpanded: Record<string, boolean> = {};
+    (role === "admin" ? adminLinks : sellerLinks).forEach(link => {
+      if (link.basePath && pathname.startsWith(link.basePath)) {
+        newExpanded[link.label] = true;
+      }
+      if (link.label === "Inquiries" && pathname.includes("/inquiry/")) {
+        newExpanded[link.label] = true;
+      }
+    });
+    setExpandedMenus(prev => ({ ...prev, ...newExpanded }));
+  }, [pathname, role]);
+
+  const toggleMenu = (label: string) => {
+    setExpandedMenus(prev => ({ ...prev, [label]: !prev[label] }));
+  };
 
   // Close on Escape
   useEffect(() => {
@@ -85,11 +126,59 @@ export function Sidebar({ role, isOpen, onClose }: SidebarProps) {
       {/* Nav Links */}
       <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-0.5">
         {links.map((link) => {
-          const isActive = pathname === link.href || pathname.startsWith(link.href + "/");
+          if (link.subItems) {
+            const isExpanded = !!expandedMenus[link.label];
+            let isChildActive = link.basePath ? pathname.startsWith(link.basePath) : false;
+            if (link.label === "Inquiries" && pathname.includes("/inquiry/")) isChildActive = true;
+            return (
+              <div key={link.label} className="space-y-1">
+                <button
+                  onClick={() => toggleMenu(link.label)}
+                  className={`w-full group flex items-center justify-between rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-150 ${
+                    isChildActive ? "bg-orange-50 text-orange-700 shadow-sm" : "text-gray-600 hover:bg-gray-50 hover:text-orange-600"
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <svg
+                      className={`h-4 w-4 flex-shrink-0 transition-colors ${isChildActive ? "text-orange-600" : "text-gray-400 group-hover:text-orange-500"}`}
+                      fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" d={link.icon} />
+                    </svg>
+                    <span>{link.label}</span>
+                  </div>
+                  <svg className={`h-4 w-4 transform transition-transform ${isExpanded ? "rotate-180" : ""} ${isChildActive ? "text-orange-600" : "text-gray-400"}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+                {isExpanded && (
+                  <div className="ml-9 space-y-1 pb-1">
+                    {link.subItems.map((subItem) => {
+                      const isSubActive = pathname === subItem.href;
+                      return (
+                        <Link
+                          key={subItem.href}
+                          href={subItem.href}
+                          onClick={onClose}
+                          className={`block rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
+                            isSubActive ? "bg-orange-100 text-orange-700" : "text-gray-500 hover:bg-gray-50 hover:text-orange-600"
+                          }`}
+                        >
+                          {subItem.label}
+                        </Link>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            );
+          }
+
+          const isActive = link.href && (pathname === link.href || pathname.startsWith(link.href + "/"));
           return (
             <Link
-              key={link.href}
-              href={link.href}
+              key={link.href || link.label}
+              href={link.href || "#"}
               onClick={onClose}
               className={`group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-150 ${
                 isActive

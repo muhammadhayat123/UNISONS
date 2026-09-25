@@ -4,7 +4,7 @@ import { useState, useCallback } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { registerUser, type Designation } from "../lib/api";
+import { authService, type Designation } from "../lib/api";
 import Toast from "../components/ui/Toast";
 
 interface FormState {
@@ -95,7 +95,7 @@ export default function RegisterPage() {
 
     setIsLoading(true);
     try {
-      const res = await registerUser({
+      const res = await authService.signup({
         username: form.username.trim(),
         email: form.email.trim(),
         password: form.password,

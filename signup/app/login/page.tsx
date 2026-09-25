@@ -4,7 +4,7 @@ import { useState, useCallback } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { loginUser } from "../lib/api";
+import { authService } from "../lib/api";
 import Toast from "../components/ui/Toast";
 
 interface FormState {
@@ -66,7 +66,7 @@ export default function LoginPage() {
 
     setIsLoading(true);
     try {
-      const res = await loginUser({
+      const res = await authService.login({
         email: form.email.trim(),
         password: form.password,
       });
@@ -84,11 +84,7 @@ export default function LoginPage() {
 
       setToast({ message: `Welcome back, ${res.data.username}!`, type: "success" });
       setTimeout(() => {
-        if (res.data.designation === 'admin') {
-          router.push("/admin/dashboard");
-        } else {
-          router.push("/seller/dashboard");
-        }
+        router.push("/dashboard");
       }, 1200);
     } catch (err: unknown) {
       const message =
